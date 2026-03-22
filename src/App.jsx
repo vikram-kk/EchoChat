@@ -1,5 +1,9 @@
-import React from "react";
+import Chat from "./components/Chat";
 
 export default function App() {
-  return <div>App</div>;
+  return (
+    <div>
+      <Chat />
+    </div>
+  );
 }
