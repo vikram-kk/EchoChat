@@ -4,14 +4,24 @@ import socket from "../serives/socket.api";
 export default function Chat() {
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState([]);
+  const [onlineUsers, setOnlineUsers] = useState([]);
 
   useEffect(() => {
-    socket.on("recievemessage", (data) => {
+    socket.emit("addUser", "Vikram");
+    // socket.emit("addUser", "Diksha");
+
+    socket.on("receiveMessage", (data) => {
       setMessages((prev) => [...prev, data]);
+    });
+
+    socket.on("getOnlineUsers", (users) => {
+      setOnlineUsers(users);
+      console.log("Online Users:", users);
     });
 
     return () => {
       socket.off("receiveMessage");
+      socket.off("getOnlineUsers");
     };
   }, []);
 
@@ -27,6 +37,12 @@ export default function Chat() {
     <div>
       <div>
         <h2>Real Time Messaging App</h2>
+        <h3>Online Users:</h3>
+        <ul>
+          {onlineUsers.map((user, index) => (
+            <li key={index}>{user}</li>
+          ))}
+        </ul>
         <div>
           {messages.map((item, index) => (
             <p key={index}>
