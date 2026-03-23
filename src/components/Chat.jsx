@@ -1,15 +1,14 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, use } from "react";
 import socket from "../serives/socket.api";
 
 export default function Chat() {
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState([]);
+  const [user, setUser] = useState("");
+  const [isJoined, setIsJoined] = useState(false);
   const [onlineUsers, setOnlineUsers] = useState([]);
 
   useEffect(() => {
-    socket.emit("addUser", "Vikram");
-    // socket.emit("addUser", "Diksha");
-
     socket.on("receiveMessage", (data) => {
       setMessages((prev) => [...prev, data]);
     });
@@ -25,13 +24,40 @@ export default function Chat() {
     };
   }, []);
 
+  const submitHandler = (e) => {
+    e.preventDefault();
+    socket.emit("addUser", user);
+    setIsJoined(true);
+    // socket.emit("addUser", "Diksha");
+  };
+
   const sendMessage = () => {
     if (message.trim() === "") return;
     socket.emit("sendMessage", {
-      user: "Vikram",
+      user: user,
       message: message,
     });
+    setMessage("");
   };
+  if (!isJoined) {
+    return (
+      <div>
+        <form onSubmit={(e) => submitHandler(e)}>
+          <label htmlFor="name">Enter your Name:</label>
+          <input
+            type="text"
+            placeholder="eg. Vikram Thakur"
+            value={user}
+            onChange={(e) => setUser(e.target.value)}
+          />
+          <button type="submit" onClick={(e) => submitHandler(e)}>
+            {" "}
+            Join Chat
+          </button>
+        </form>
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -58,7 +84,9 @@ export default function Chat() {
         value={message}
         onChange={(e) => setMessage(e.target.value)}
       />
-      <button onClick={sendMessage}>Send</button>
+      <button disabled={!user.trim()} onClick={sendMessage}>
+        Send
+      </button>
     </div>
   );
 }
