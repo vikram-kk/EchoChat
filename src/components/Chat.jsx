@@ -5,12 +5,15 @@ export default function Chat() {
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState([]);
   const [user, setUser] = useState("");
+  const [receiver, setReceiver] = useState("");
   const [isJoined, setIsJoined] = useState(false);
   const [onlineUsers, setOnlineUsers] = useState([]);
 
   useEffect(() => {
     socket.on("receiveMessage", (data) => {
       setMessages((prev) => [...prev, data]);
+      // console
+      console.log(data);
     });
 
     socket.on("getOnlineUsers", (users) => {
@@ -30,11 +33,20 @@ export default function Chat() {
     setIsJoined(true);
     // socket.emit("addUser", "Diksha");
   };
+  const joinRoom = (readermsg) => {
+    setReceiver(readermsg);
+
+    socket.emit("joinRoom", { user1: user, user2: receiver });
+    // console
+    // console
+    console.log(`${user} requested to chat with ${receiver}`);
+  };
 
   const sendMessage = () => {
     if (message.trim() === "") return;
     socket.emit("sendMessage", {
-      user: user,
+      sender: user,
+      receiver: receiver,
       message: message,
     });
     setMessage("");
@@ -50,10 +62,7 @@ export default function Chat() {
             value={user}
             onChange={(e) => setUser(e.target.value)}
           />
-          <button type="submit" onClick={(e) => submitHandler(e)}>
-            {" "}
-            Join Chat
-          </button>
+          <button type="submit"> Join Chat</button>
         </form>
       </div>
     );
@@ -66,13 +75,23 @@ export default function Chat() {
         <h3>Online Users:</h3>
         <ul>
           {onlineUsers.map((user, index) => (
-            <li key={index}>{user}</li>
+            <li key={index}>
+              {user}{" "}
+              <button
+                onClick={() => {
+                  joinRoom(user);
+                }}
+              >
+                {" "}
+                Chat{" "}
+              </button>
+            </li>
           ))}
         </ul>
         <div>
           {messages.map((item, index) => (
             <p key={index}>
-              <strong>{item.user}:</strong>
+              <strong>{item.sender}:</strong>
               {item.message}
             </p>
           ))}
