@@ -8,6 +8,8 @@ export default function Chat() {
   const [receiver, setReceiver] = useState("");
   const [isJoined, setIsJoined] = useState(false);
   const [onlineUsers, setOnlineUsers] = useState([]);
+  const [isTyping, setIsTyping] = useState(false);
+  const [typing, setTyping] = useState("");
 
   useEffect(() => {
     socket.on("receiveMessage", (data) => {
@@ -17,6 +19,17 @@ export default function Chat() {
     });
     socket.on("chatHistory", (message) => {
       setMessages(message);
+    });
+
+    socket.on("userTyping", (data) => {
+      //   console.log(data);
+      setTyping(data.sender);
+
+      setIsTyping(true);
+
+      setTimeout(() => {
+        setIsTyping(false);
+      }, 1800);
     });
 
     socket.on("getOnlineUsers", (users) => {
@@ -29,6 +42,15 @@ export default function Chat() {
       socket.off("getOnlineUsers");
     };
   }, []);
+
+  const handleTyping = (e) => {
+    setMessage(e.target.value);
+
+    socket.emit("typing", {
+      sender: user,
+      receiver: receiver,
+    });
+  };
 
   const submitHandler = (e) => {
     e.preventDefault();
@@ -102,11 +124,12 @@ export default function Chat() {
           ))}
         </div>
       </div>
+      {isTyping && <p>{typing} is typing...</p>}
       <input
         type="text"
         placeholder="Type your message"
         value={message}
-        onChange={(e) => setMessage(e.target.value)}
+        onChange={(e) => handleTyping(e)}
       />
       <button disabled={!user.trim()} onClick={sendMessage}>
         Send
