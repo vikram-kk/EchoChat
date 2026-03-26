@@ -15,6 +15,9 @@ export default function Chat() {
       // console
       console.log(data);
     });
+    socket.on("chatHistory", (message) => {
+      setMessages(message);
+    });
 
     socket.on("getOnlineUsers", (users) => {
       setOnlineUsers(users);
@@ -36,10 +39,11 @@ export default function Chat() {
   const joinRoom = (readermsg) => {
     setReceiver(readermsg);
 
-    socket.emit("joinRoom", { user1: user, user2: receiver });
+    socket.emit("joinRoom", { user1: user, user2: readermsg });
+
     // console
     // console
-    console.log(`${user} requested to chat with ${receiver}`);
+    console.log(`${user} requested to chat with ${readermsg}`);
   };
 
   const sendMessage = () => {
@@ -57,6 +61,7 @@ export default function Chat() {
         <form onSubmit={(e) => submitHandler(e)}>
           <label htmlFor="name">Enter your Name:</label>
           <input
+            id="name"
             type="text"
             placeholder="eg. Vikram Thakur"
             value={user}
