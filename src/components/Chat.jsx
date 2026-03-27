@@ -109,7 +109,7 @@ export default function Chat() {
 
   return (
     <div className="bg-amber-600 h-screen w-full flex items-center justify-center">
-      <div className=" bg-amber-400 px-4 py-6 rounded shadow-2xl">
+      <div className=" bg-amber-400 p-4 rounded shadow-2xl">
         <div className="flex flex-col items-center justify-center">
           <h2 className="font-bold text-2xl uppercase">
             Real Time Messaging App
@@ -134,25 +134,40 @@ export default function Chat() {
               </li>
             ))}
           </ul>
-          <div className="bg-amber-200 shadow-2xl overflow-auto h-70  w-full pl-2 rounded border-2 border-amber-100 no-scrollbar    ">
+          <div
+            className={`bg-amber-200 shadow-2xl overflow-auto h-70
+                 w-full pl-2 rounded border-2 border-amber-100 no-scrollbar`}
+          >
             {messages.map((item, index) => (
-              <p key={index}>
-                <strong>{item.sender}:</strong>
-                {item.message}
-              </p>
+              <div
+                className={`flex ${item.sender === user ? "flex-row-reverse" : "flex-row"}`}
+                key={index}
+              >
+                <p className="bg-amber-50 m-1 max-w-30  p-2 flex flex-col rounded-3xl">
+                  <strong className="text-[11px]">{item.sender}:</strong>
+                  <span className="text-sm">{item.message}</span>
+                </p>
+              </div>
             ))}
           </div>
         </div>
-        {isTyping && <p>{typing} is typing...</p>}
-        <input
-          type="text"
-          placeholder="Type your message"
-          value={message}
-          onChange={(e) => handleTyping(e)}
-        />
-        <button disabled={!user.trim()} onClick={sendMessage}>
-          Send
-        </button>
+        {(isTyping && <p>: {typing} is typing...</p>) || <p>:</p>}
+        <div className="flex justify-between">
+          <input
+            className=" bg-amber-100 w-full mr-2 px-2 rounded focus:outline-none py-0.5"
+            type="text"
+            placeholder="Type your message"
+            value={message}
+            onChange={(e) => handleTyping(e)}
+          />
+          <button
+            className="bg-amber-100 px-4 rounded hover:bg-amber-900 hover:text-white transition-all ease-in"
+            disabled={!user.trim()}
+            onClick={sendMessage}
+          >
+            Send
+          </button>
+        </div>
       </div>
     </div>
   );
