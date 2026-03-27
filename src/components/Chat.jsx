@@ -79,61 +79,81 @@ export default function Chat() {
   };
   if (!isJoined) {
     return (
-      <div>
-        <form onSubmit={(e) => submitHandler(e)}>
-          <label htmlFor="name">Enter your Name:</label>
+      <div className="bg-amber-600 h-screen w-full flex items-center justify-center">
+        <form
+          className="bg-amber-400 p-4 rounded shadow-2xl"
+          onSubmit={(e) => submitHandler(e)}
+        >
+          <label className="font-bold text-xl" htmlFor="name">
+            Enter your Name:
+          </label>
           <input
+            className="bg-gray-200 m-1 px-2 rounded-xl py-2"
             id="name"
             type="text"
             placeholder="eg. Vikram Thakur"
             value={user}
             onChange={(e) => setUser(e.target.value)}
           />
-          <button type="submit"> Join Chat</button>
+          <button
+            className="bg-amber-800 hover:bg-amber-700 px-4 py-2 rounded-2xl text-white"
+            type="submit"
+          >
+            {" "}
+            Join Chat
+          </button>
         </form>
       </div>
     );
   }
 
   return (
-    <div>
-      <div>
-        <h2>Real Time Messaging App</h2>
-        <h3>Online Users:</h3>
-        <ul>
-          {onlineUsers.map((user, index) => (
-            <li key={index}>
-              {user}{" "}
-              <button
-                onClick={() => {
-                  joinRoom(user);
-                }}
+    <div className="bg-amber-600 h-screen w-full flex items-center justify-center">
+      <div className=" bg-amber-400 px-4 py-6 rounded shadow-2xl">
+        <div className="flex flex-col items-center justify-center">
+          <h2 className="font-bold text-2xl uppercase">
+            Real Time Messaging App
+          </h2>
+          <h3 className="font-semibold">Online Users:</h3>
+          <ul className="  text-amber-200  w-full">
+            {onlineUsers.map((user, index) => (
+              <li
+                key={index}
+                className="p-2 bg-amber-900 flex rounded justify-between m-1"
               >
-                {" "}
-                Chat{" "}
-              </button>
-            </li>
-          ))}
-        </ul>
-        <div>
-          {messages.map((item, index) => (
-            <p key={index}>
-              <strong>{item.sender}:</strong>
-              {item.message}
-            </p>
-          ))}
+                {user}{" "}
+                <button
+                  className="bg-amber-200 text-amber-900 hover:bg-green-600 hover:text-white transition-all ease-in px-4 py-0.5 rounded-2xl"
+                  onClick={() => {
+                    joinRoom(user);
+                  }}
+                >
+                  {" "}
+                  Chat{" "}
+                </button>
+              </li>
+            ))}
+          </ul>
+          <div className="bg-amber-200 shadow-2xl overflow-auto h-70  w-full pl-2 rounded border-2 border-amber-100 no-scrollbar    ">
+            {messages.map((item, index) => (
+              <p key={index}>
+                <strong>{item.sender}:</strong>
+                {item.message}
+              </p>
+            ))}
+          </div>
         </div>
+        {isTyping && <p>{typing} is typing...</p>}
+        <input
+          type="text"
+          placeholder="Type your message"
+          value={message}
+          onChange={(e) => handleTyping(e)}
+        />
+        <button disabled={!user.trim()} onClick={sendMessage}>
+          Send
+        </button>
       </div>
-      {isTyping && <p>{typing} is typing...</p>}
-      <input
-        type="text"
-        placeholder="Type your message"
-        value={message}
-        onChange={(e) => handleTyping(e)}
-      />
-      <button disabled={!user.trim()} onClick={sendMessage}>
-        Send
-      </button>
     </div>
   );
 }
