@@ -12,20 +12,30 @@ export default function Chat() {
   const [typing, setTyping] = useState("");
 
   const chatContainerRef = useRef(null);
+  const typingTimeoutRef = useRef(null);
   const messageEndRef = useRef(null);
 
   const isNearBotton = () => {
     const el = chatContainerRef.current;
+    if (!el) return true;
     return el.scrollHeight - el.scrollTop - el.clientHeight < 100;
   };
 
   const scrolltobottom = () => {
     messageEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
+  const hasUnseenMessages = messages.some(
+    (msg) => msg.sender === receiver && msg.status !== "seen",
+  );
 
   useEffect(() => {
-    if (isNearBotton()) {
+    if (isNearBotton() && hasUnseenMessages) {
       scrolltobottom();
+
+      socket.emit("markAsSeen", {
+        sender: receiver,
+        receiver: user,
+      });
     }
   }, [messages]);
 
@@ -38,17 +48,26 @@ export default function Chat() {
     socket.on("chatHistory", (message) => {
       setMessages(message);
     });
-
+    // let typingTimeout;
     socket.on("userTyping", (data) => {
       //   console.log(data);
       setTyping(data.sender);
       setIsTyping(true);
 
-      clearTimeout(typingTimeout);
+      clearTimeout(typingTimeoutRef.current);
 
-      typingTimeout = setTimeout(() => {
+      typingTimeoutRef.current = setTimeout(() => {
         setIsTyping(false);
       }, 1500);
+    });
+    socket.on("messageSeen", ({ sender }) => {
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg.sender === user && msg.receiver === sender
+            ? { ...msg, status: "seen" }
+            : msg,
+        ),
+      );
     });
 
     socket.on("getOnlineUsers", (users) => {
@@ -57,8 +76,12 @@ export default function Chat() {
     });
 
     return () => {
+      //   socket.off("receiveMessage");
+      //   socket.off("getOnlineUsers");
       socket.off("receiveMessage");
       socket.off("getOnlineUsers");
+      socket.off("messageSeen");
+      socket.off("userTyping");
     };
   }, []);
 
@@ -79,8 +102,11 @@ export default function Chat() {
   };
   const joinRoom = (readermsg) => {
     setReceiver(readermsg);
-
     socket.emit("joinRoom", { user1: user, user2: readermsg });
+    socket.emit("markAsSeen", {
+      sender: readermsg,
+      receiver: user,
+    });
 
     // console
     // console
@@ -180,9 +206,17 @@ export default function Chat() {
                 className={`flex ${item.sender === user ? "flex-row-reverse" : "flex-row"} pb-5`}
                 key={index}
               >
-                <p className="bg-orange-100/50 m-1 max-w-60   p-2 flex flex-col rounded-3xl">
+                <p className="bg-orange-100/50 m-1 max-w-60 p-2 flex flex-col rounded-3xl">
                   <strong className="text-[11px]">{item.sender}:</strong>
                   <span className="text-sm">{item.message}</span>
+
+                  {item.sender === user && (
+                    <span className="text-[10px] text-gray-500 mt-1">
+                      {item.status === "sent" && "✔"}
+                      {item.status === "delivered" && "✔✔"}
+                      {item.status === "seen" && "✔✔ Seen"}
+                    </span>
+                  )}
                 </p>
               </div>
             ))}
