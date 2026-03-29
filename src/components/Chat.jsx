@@ -29,21 +29,29 @@ export default function Chat() {
   );
 
   useEffect(() => {
-    if (isNearBotton() && hasUnseenMessages) {
-      scrolltobottom();
+    if (!receiver || !user) return;
+
+    const unseenMessages = messages.filter(
+      (msg) =>
+        msg.sender === receiver &&
+        msg.receiver === user &&
+        msg.status !== "seen",
+    );
+
+    if (unseenMessages.length > 0) {
+      console.log("Marking as seen...");
 
       socket.emit("markAsSeen", {
         sender: receiver,
         receiver: user,
       });
     }
-  }, [messages]);
-
+  }, [messages.length, receiver, user]);
   useEffect(() => {
     socket.on("receiveMessage", (data) => {
       setMessages((prev) => [...prev, data]);
       // console
-      console.log(data);
+      // console.log(data);
     });
     socket.on("chatHistory", (message) => {
       setMessages(message);
@@ -61,6 +69,7 @@ export default function Chat() {
       }, 1500);
     });
     socket.on("messageSeen", ({ sender }) => {
+      console.log("Seen received from:", sender);
       setMessages((prev) =>
         prev.map((msg) =>
           msg.sender === user && msg.receiver === sender
@@ -103,10 +112,10 @@ export default function Chat() {
   const joinRoom = (readermsg) => {
     setReceiver(readermsg);
     socket.emit("joinRoom", { user1: user, user2: readermsg });
-    socket.emit("markAsSeen", {
-      sender: readermsg,
-      receiver: user,
-    });
+    // socket.emit("markAsSeen", {
+    //   sender: readermsg,
+    //   receiver: user,
+    // });
 
     // console
     // console
@@ -213,7 +222,6 @@ export default function Chat() {
                   {item.sender === user && (
                     <span className="text-[10px] text-gray-500 mt-1">
                       {item.status === "sent" && "✔"}
-                      {item.status === "delivered" && "✔✔"}
                       {item.status === "seen" && "✔✔ Seen"}
                     </span>
                   )}
